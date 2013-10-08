@@ -5,23 +5,26 @@
   Include:
   - @all_ratings.each do |rating|
     = rating
-    -# This helper function makes a hash for params[:ratings]
-    = check_box_tag "ratings[#{rating}]", "checked", @rating_filter[rating]
+    -# First param makes a hash with a key for every checked box
+    -# Second param determines what value this hash has for its key
+    -# Third param determines if the box should be checked our not
+    = check_box_tag "ratings[#{rating}]", true, @rating_filter[rating]
   = submit_tag 'Refresh'
 
 %table#movies
+  -# Specifies the headers
   %thead
     %tr
-    
-      -# This {:class specifies the class type of the [???]
-      -# The second part (link_to)
-      %th{:class => params[:order] == 'title' && "hilite"}= link_to "Movie Title", movies_path(:order=>'title', :ratings =>params[:ratings])
+      -# The first part sets class of the title to hilite if
+      -# params[:order] == title
+      -# Second part creates a link to the same page, except passes
+      -# a value of into the params hash
+      %th{:class => params[:order] == 'title' ? "hilite" : ""}= link_to "Movie Title", movies_path(:order=>'title', :ratings =>params[:ratings])
       %th Rating
-      
-      -# This first part in brackets tells the class of this link to be hilite (in css)
-      %th{:class => params[:order] == 'date' && "hilite"}= link_to "Release Date", movies_path(:order=>'date', :ratings =>params[:ratings])
+      %th{:class => params[:order] == 'date' ? "hilite" : ""}= link_to "Release Date", movies_path(:order=>'date', :ratings =>params[:ratings])
       %th More Info
-      
+
+  -# Specifies the columns
   %tbody
     - @movies.each do |movie|
       %tr

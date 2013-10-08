@@ -15,24 +15,28 @@ class MoviesController < ApplicationController
     @movies = Movie.all # Get all movies inside an instance variable
     @all_ratings =  ['G','PG','PG-13','R', 'NC-17'] # Ratings
     @rating_filter = {} # Create a hash for what ratings are checked
-	
-	# Get the remembered settings, first check that one of the session
-	# params exist
-	if (session[:ratings] != nil or session[:order] != nil)
-		# Check that one of the params is empty
-		if (params[:order] == nil or (params[:ratings] == nil))
-			# Remember :order?
-			if (params[:order] == nil and session[:order] != nil)
-			  params[:order] = session[:order]
-			end
-			# Remember :ratings?
-			if (params[:ratings] == nil and session[:order] != nil)
-				params[:ratings] = session[:ratings]
-			end
-			# Reload with wanted parameters
-			redirect_to movies_path(:order => params[:order],
-				:ratings => params[:ratings]) 
-		end
+	redirect = false # Should we redirect?
+
+	# By setting the hash's default value to true we make it so that all
+	# of the check boxes will be checked when this hash is initially
+	# empty.
+	@rating_filter.default = true
+
+	# Get the remembered settings: order
+	if (params[:order] == nil and (session[:order] != nil))
+		params[:order] = session[:order]
+		redirect = true
+	end
+	# Get the remembered settings: ratings
+	if (params[:ratings] == nil and (session[:ratings] != nil))
+		params[:ratings] = session[:ratings]
+		redirect = true
+	end
+
+	# Redirect if the bool is set
+	if redirect
+		redirect_to movies_path(:order => params[:order],
+			:ratings => params[:ratings]) 
 	end
 	
 	# Set the rating_filter hash depending on what :ratings is, which
@@ -46,15 +50,18 @@ class MoviesController < ApplicationController
 			end
 		end
     }
-	
+
 	# Remove movies with ratings that are unchecked
 	if (params[:ratings] != nil)
-		@movies = @movies.find_all{ |movie| @rating_filter.has_key?(movie.rating) and @rating_filter[movie.rating] == true }
+		@movies = @movies.find_all{ |movie|
+			@rating_filter.has_key?(movie.rating) and
+			@rating_filter[movie.rating] == true }
 	end
 	
 	# If the parameter :order matches 'title', sort movies by title
 	if (params[:order] == 'title')
 		@movies = @movies.sort_by{ |movie| movie.title }
+	# Else by date
 	elsif (params[:order] == 'date')
 		@movies = @movies.sort_by{ |movie| movie.release_date.to_s }
 	end
